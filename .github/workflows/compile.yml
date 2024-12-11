@@ -34,7 +34,7 @@ jobs:
     - name: Download and Extract RPi OS Lite
       run: |
         mkdir -p images
-        curl -L -o images/rpi-os-lite.img.xz https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2024-01-01/2024-01-01-raspios-bullseye-armhf-lite.img.xz
+        curl -L -o images/rpi-os-lite.img.xz https://downloads.raspberrypi.org/raspios_lite_armhf_latest
         # Check if the file is correctly downloaded
         file images/rpi-os-lite.img.xz
         # Ensure the file is the correct XZ compressed image
