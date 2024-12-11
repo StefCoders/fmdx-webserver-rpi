@@ -1,0 +1,57 @@
+name: Build ISO with FM-DX Webserver
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+  repository_dispatch:
+    types:
+      - fm-dx-webserver-updated
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Clone FM-DX Webserver
+      run: |
+        git clone https://github.com/NoobishSVK/fm-dx-webserver.git fm-dx-webserver
+        cd fm-dx-webserver
+        git pull
+
+    - name: Install Required Deps
+      run: |
+        sudo apt update && sudo apt install -y \
+          qemu-utils \
+          chroot \
+          curl \
+          xz-utils
+
+    - name: Download Raspberry Pi OS Lite
+      run: |
+        mkdir -p images
+        curl -o images/rpi-os-lite.img.xz https://downloads.raspberrypi.org/raspios_lite_armhf_latest
+        unxz images/rpi-os-lite.img.xz
+
+    - name: Customize the Image
+      run: |
+        mkdir -p mnt
+        sudo mount -o loop,offset=$((512*2048)) images/rpi-os-lite.img mnt
+        sudo cp -r fm-dx-webserver mnt/home/pi/
+        sudo cp setup.sh mnt/home/pi/
+        sudo chroot mnt /bin/bash -c "/home/pi/setup.sh"
+        sudo umount mnt
+
+    - name: Compress the Image
+      run: |
+        xz -z -9 images/rpi-os-lite.img
+        mv images/rpi-os-lite.img.xz custom-fm-dx-webserver.img.xz
+
+    - name: Upload ISO Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: custom-fm-dx-webserver
+        path: custom-fm-dx-webserver.img.xz
