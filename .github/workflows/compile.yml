@@ -48,8 +48,9 @@ jobs:
         sudo kpartx -a $LOOP_DEVICE
         sudo partprobe $LOOP_DEVICE
         sudo ls /dev/mapper/
-        sudo mount /dev/mapper/loop0p2 mnt
-
+        sudo mkdir -p /tmp/rpi-os
+        sudo mount /dev/mapper/loop3p2 /tmp/rpi-os
+        
     - name: Customize the Image
       run: |
         mkdir -p mnt
