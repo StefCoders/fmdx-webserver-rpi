@@ -27,7 +27,9 @@ jobs:
         sudo apt update && sudo apt install -y \
           qemu-utils \
           curl \
-          xz-utils
+          xz-utils \
+          dosfstools \
+          kpartx
 
     - name: Download and Extract RPi OS Lite
       run: |
@@ -38,11 +40,16 @@ jobs:
           unxz images/rpi-os-lite.img.xz
         fi
 
+    - name: Create a loop device and mount the image
+      run: |
+        sudo losetup --find --show images/rpi-os-lite.img
+        LOOP_DEVICE=$(sudo losetup --find --show images/rpi-os-lite.img)
+        sudo kpartx -a $LOOP_DEVICE
+        sudo mount /dev/mapper/loop0p2 mnt
 
     - name: Customize the Image
       run: |
-        mkdir -p mnt
-        sudo mount -o loop,offset=$((512*2048)) images/rpi-os-lite.img mnt
+        sudo mkdir -p mnt/home/pi
         sudo cp -r fm-dx-webserver mnt/home/pi/
         sudo cp setup.sh mnt/home/pi/
         sudo chroot mnt /bin/bash -c "/home/pi/setup.sh"
@@ -50,7 +57,8 @@ jobs:
 
     - name: Compress the Image
       run: |
-        xz -z -9 images/rpi-os-lite.img
+        mv images/rpi-os-lite.img images/rpi-os-lite.img.original
+        xz -z -9 images/rpi-os-lite.img.original
         mv images/rpi-os-lite.img.xz custom-fm-dx-webserver.img.xz
 
     - name: Upload ISO Artifact
