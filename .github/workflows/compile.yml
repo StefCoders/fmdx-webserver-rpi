@@ -28,7 +28,9 @@ jobs:
           qemu-utils \
           curl \
           xz-utils \
-          kpartx
+          kpartx \
+          dosfstools \
+          e2fsprogs
 
     - name: Download and Extract RPi OS Lite
       run: |
@@ -38,8 +40,9 @@ jobs:
         if file images/rpi-os-lite.img.xz | grep -q "XZ compressed data"; then
           unxz images/rpi-os-lite.img.xz
         fi
+        ls -lh images/rpi-os-lite.img
 
-    - name: Create a loop device and mount the image
+    - name: Set Up Loop Device and Mount the Image
       run: |
         LOOP_DEVICE=$(sudo losetup --find --show images/rpi-os-lite.img)
         sudo kpartx -a $LOOP_DEVICE
