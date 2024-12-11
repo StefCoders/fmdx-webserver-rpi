@@ -50,6 +50,7 @@ jobs:
         sudo losetup --find --show images/rpi-os-lite.img
         LOOP_DEVICE=$(sudo losetup --find --show images/rpi-os-lite.img)
         sudo kpartx -a $LOOP_DEVICE
+        sudo mkdir -p mnt
         sudo mount /dev/mapper/loop0p2 mnt
 
     - name: Customize the Image
